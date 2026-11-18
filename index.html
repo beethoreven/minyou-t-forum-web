@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>老爺華廈論壇</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <h1 class="site-title">老爺華廈論壇</h1>
+      <!-- 登入之後這裡顯示名稱、後台入口與登出，內容由 js/main.js 填。 -->
+      <div id="account" class="account" hidden></div>
+    </div>
+  </header>
+
+  <!-- 頁籤只有審核通過的成員看得到，所以一開始是藏起來的。 -->
+  <nav id="tabs" class="tabs" aria-label="主要頁籤" hidden>
+    <div class="tabs-inner">
+      <a class="tab" href="#/announcements" data-tab="announcements">社區公告</a>
+      <a class="tab" href="#/forum" data-tab="forum">社區論壇</a>
+      <a class="tab" href="#/documents" data-tab="documents">社區文檔</a>
+      <a class="tab" href="#/reserved" data-tab="reserved">敬請期待</a>
+    </div>
+  </nav>
+
+  <main id="view" class="view">
+    <noscript>這個網站需要開啟 JavaScript 才能使用。</noscript>
+  </main>
+
+  <!-- Google 登入按鈕用的元件。 -->
+  <script id="google-script" src="https://accounts.google.com/gsi/client" async defer></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

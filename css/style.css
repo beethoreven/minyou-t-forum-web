@@ -1,0 +1,516 @@
+/* 以手機為主來排版：單欄、字夠大、按鈕好按。電腦上只是把內容限制在中間一欄。 */
+
+:root {
+  /* 主色：檜木紅。要換顏色只改這兩行。 */
+  --accent: #9a3b2a;
+  --accent-soft: #f6e5df;
+
+  --bg: #f7f2ec;
+  --surface: #ffffff;
+  --text: #2a2422;
+  --muted: #6f6660;
+  --line: #e6ddd5;
+  --danger: #b3261e;
+  --ok: #2e6b3f;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 有 hidden 屬性的元素一律不顯示，不管它另外被設成 flex 或 grid。 */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── 頁首與頁籤 ───────────────────────────── */
+
+.site-header {
+  background: var(--accent);
+  color: #ffffff;
+  padding: 12px 16px;
+}
+
+.site-header-inner,
+.tabs-inner,
+.view {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.site-header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+}
+
+.account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.account-name {
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+}
+
+.account-link {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: #ffffff;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.tab {
+  padding: 12px 2px 9px;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tab[aria-current="page"] {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.view {
+  padding: 16px 16px 48px;
+}
+
+/* ── 共用的小零件 ─────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.button {
+  display: inline-block;
+  min-height: 40px;
+  padding: 7px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.button-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.button-small {
+  min-height: 32px;
+  padding: 3px 12px;
+  font-size: 0.9rem;
+}
+
+.status {
+  margin: 24px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+.status-error p {
+  margin: 0 0 12px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 0;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ── 登入、註冊、審核中這些單張卡片的畫面 ───── */
+
+.card,
+.entry-detail,
+.replies,
+.form,
+.placeholder,
+.member {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card-center {
+  margin-top: 24px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.card-text {
+  margin: 8px 0 16px;
+  color: var(--muted);
+}
+
+/* Google 的按鈕是它自己畫的。先留好高度，按鈕出現時畫面才不會跳一下。 */
+.google-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+  margin: 16px 0 8px;
+}
+
+/* ── 列表 ─────────────────────────────────── */
+
+.entry-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.entry-list:empty {
+  display: none;
+}
+
+.entry-list > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.entry {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.entry:hover,
+.entry:focus-visible {
+  background: var(--accent-soft);
+}
+
+.entry:disabled {
+  cursor: default;
+}
+
+.entry-title {
+  display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.entry-meta {
+  display: block;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.list-more {
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* ── 內容頁 ───────────────────────────────── */
+
+.detail-title {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* 內文是純文字：保留使用者打的換行，太長的字（例如網址）自動折行。 */
+.body-text {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.body-text a {
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* ── 回覆 ─────────────────────────────────── */
+
+.replies {
+  margin-top: 16px;
+}
+
+.section-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+
+.reply-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reply {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reply .body-text {
+  margin-top: 4px;
+}
+
+.reply .actions {
+  margin-top: 8px;
+}
+
+.replies .form {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+}
+
+/* ── 表單 ─────────────────────────────────── */
+
+.field {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* 字級不能小於 16px：再小的話，iPhone 點進輸入框時會自動放大整個畫面。 */
+.input {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+}
+
+.input:disabled {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.counter {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.counter-over {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.form-error {
+  margin: 0 0 8px;
+  color: var(--danger);
+}
+
+.form-error:empty {
+  display: none;
+}
+
+/* ── 後台：成員管理 ───────────────────────── */
+
+.member-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.member-email {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.member-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.member-field .label {
+  font-size: 0.85rem;
+}
+
+.badge {
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.badge-pending {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.badge-approved {
+  background: #e4f1e7;
+  color: var(--ok);
+}
+
+.save-message {
+  margin: 8px 0 0;
+  color: var(--ok);
+  font-size: 0.9rem;
+}
+
+.save-message:empty {
+  display: none;
+}
+
+.save-message-error {
+  color: var(--danger);
+}
+
+/* ── 確認視窗 ─────────────────────────────── */
+
+.dialog {
+  width: min(340px, calc(100vw - 48px));
+  padding: 20px;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.dialog-message {
+  margin: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ── 預留的頁籤 ───────────────────────────── */
+
+.placeholder {
+  padding: 40px 16px;
+  color: var(--muted);
+  text-align: center;
+}
