@@ -131,12 +131,19 @@ export function disabledScreen(container) {
  * 啟動時連不上伺服器。這不代表登入失效，所以不登出，只給「再試一次」。
  */
 export function unreachableScreen(container, error, onRetry) {
+  // 429 是伺服器說「你的請求太頻繁」，不是連不上。照它給的訊息顯示（裡面有要等幾秒）。
+  const tooFrequent = error.status === 429;
   container.replaceChildren(
     el(
       "section",
       { class: "card card-center" },
-      el("h2", { class: "page-title", text: "暫時連不上伺服器" }),
-      el("p", { class: "card-text", text: `${error.message}。伺服器一陣子沒人使用時會休息，第一次連線可能要等一分鐘左右。` }),
+      el("h2", { class: "page-title", text: tooFrequent ? "操作太頻繁" : "暫時連不上伺服器" }),
+      el("p", {
+        class: "card-text",
+        text: tooFrequent
+          ? `${error.message}。`
+          : `${error.message}。伺服器一陣子沒人使用時會休息，第一次連線可能要等一分鐘左右。`,
+      }),
       el("button", { class: "button button-primary", type: "button", text: "再試一次", onClick: onRetry }),
     ),
   );
