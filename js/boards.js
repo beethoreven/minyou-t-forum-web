@@ -13,11 +13,15 @@ export const announcements = {
   title: "社區公告",
   noun: "公告",
   hasReplies: false,
+  hasPictures: false,
   deleteConfirm: "確定要刪除這則公告嗎？刪除後無法復原。",
   listMeta: (item) => formatTime(item.created_at),
   // 公告只有版主與管理員能發、改、刪。
   canCreate: () => isStaff(),
   canModify: () => isStaff(),
+  // 「新增公告」的入口在後台，列表上不放按鈕；在新增的畫面按取消也是回後台。
+  createOnList: false,
+  createCancelRoute: "#/admin",
 };
 
 export const forum = {
@@ -27,10 +31,13 @@ export const forum = {
   title: "社區論壇",
   noun: "文章",
   hasReplies: true,
-  deleteConfirm: "確定要刪除這篇文章嗎？底下的回覆會一起刪除，刪除後無法復原。",
+  hasPictures: true, // 發文時可以附圖
+  deleteConfirm: "確定要刪除這篇文章嗎？底下的回覆與附圖會一起刪除，刪除後無法復原。",
   listMeta: (item) =>
     `${item.author_name}・${formatTime(item.created_at)}・${item.reply_count} 則回覆`,
   // 文章每位成員都能發；改與刪要是作者本人、版主或管理員。
   canCreate: () => true,
   canModify: (entry) => isStaff() || entry.author_id === getUser().id,
+  createOnList: true,
+  createCancelRoute: "#/forum",
 };

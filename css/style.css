@@ -15,6 +15,17 @@
   --radius: 10px;
 }
 
+/*
+ * 字級：整個網站的文字大小都跟著這一行走。
+ * 住戶裡長輩多，所以設成瀏覽器預設大小的兩倍。覺得太大或太小，只改這個百分比
+ * （例如 150%、175%），下面所有用 rem 寫的尺寸會一起縮放。
+ * 用百分比不用固定的像素：使用者自己在瀏覽器把字調大時，這裡會跟著再放大。
+ */
+html {
+  font-size: 200%;
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -24,17 +35,13 @@
   display: none !important;
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 /* ── 頁首與頁籤 ───────────────────────────── */
@@ -42,13 +49,13 @@ body {
 .site-header {
   background: var(--accent);
   color: #ffffff;
-  padding: 12px 16px;
+  padding: 0.4rem 12px;
 }
 
 .site-header-inner,
 .tabs-inner,
 .view {
-  max-width: 720px;
+  max-width: 40rem;
   margin: 0 auto;
 }
 
@@ -57,12 +64,12 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 4px 12px;
+  gap: 0 0.6rem;
 }
 
 .site-title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   letter-spacing: 0.06em;
 }
 
@@ -70,17 +77,26 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
-  font-size: 0.85rem;
+  gap: 0 0.6rem;
+  font-size: 0.75rem;
 }
 
 .account-name {
-  opacity: 0.9;
   overflow-wrap: anywhere;
 }
 
+/* 還不能使用論壇的人，名字旁邊標出現在的狀態（審核中、未註冊、已停用）。 */
+.account-state {
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .account-link {
-  padding: 4px 0;
+  padding: 0.1rem 0;
   border: 0;
   background: none;
   color: #ffffff;
@@ -90,23 +106,21 @@ body {
 }
 
 .tabs {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
+/* 頁籤一排放得下就排一排，放不下就自動折成兩排（手機上是二乘二）。 */
 .tabs-inner {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr));
 }
 
 .tab {
-  padding: 12px 2px 9px;
-  border-bottom: 3px solid transparent;
+  padding: 0.35rem 2px 0.25rem;
+  border-bottom: 4px solid transparent;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -119,29 +133,30 @@ body {
 }
 
 .view {
-  padding: 16px 16px 48px;
+  padding: 0.5rem 12px 2rem;
 }
 
 /* ── 共用的小零件 ─────────────────────────── */
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 0.3rem 0.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 
 .button {
   display: inline-block;
-  min-height: 40px;
-  padding: 7px 16px;
-  border: 1px solid var(--line);
+  min-height: 2.5rem;
+  padding: 0.35rem 0.9rem;
+  border: 2px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -168,13 +183,13 @@ body {
 }
 
 .button-small {
-  min-height: 32px;
-  padding: 3px 12px;
-  font-size: 0.9rem;
+  min-height: 2rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
 }
 
 .status {
-  margin: 24px 0;
+  margin: 0.8rem 0;
   color: var(--muted);
   text-align: center;
 }
@@ -184,13 +199,13 @@ body {
 }
 
 .status-error p {
-  margin: 0 0 12px;
+  margin: 0 0 0.4rem;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 12px;
-  padding: 4px 0;
+  margin-bottom: 0.3rem;
+  padding: 0.1rem 0;
   color: var(--accent);
   text-decoration: none;
 }
@@ -203,29 +218,37 @@ body {
 .form,
 .placeholder,
 .member {
-  padding: 16px;
+  padding: 0.6rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 
 .card-center {
-  margin-top: 24px;
-  padding: 32px 20px;
+  margin-top: 0.6rem;
+  padding: 1rem 0.6rem;
   text-align: center;
 }
 
 .card-text {
-  margin: 8px 0 16px;
+  margin: 0.3rem 0 0.6rem;
   color: var(--muted);
 }
 
-/* Google 的按鈕是它自己畫的。先留好高度，按鈕出現時畫面才不會跳一下。 */
+/*
+ * Google 的登入按鈕是它自己畫的，大小固定，不會跟著上面的字級放大，所以另外把它放大。
+ * 先留好高度，按鈕出現時畫面才不會跳一下。
+ */
 .google-button {
   display: flex;
+  align-items: center;
   justify-content: center;
-  min-height: 44px;
-  margin: 16px 0 8px;
+  min-height: 4.5rem;
+}
+
+.google-button > div {
+  transform: scale(1.5);
+  transform-origin: center;
 }
 
 /* ── 列表 ─────────────────────────────────── */
@@ -251,7 +274,7 @@ body {
 .entry {
   display: block;
   width: 100%;
-  padding: 12px 14px;
+  padding: 0.45rem 0.6rem;
   border: 0;
   background: none;
   color: inherit;
@@ -278,13 +301,13 @@ body {
 
 .entry-meta {
   display: block;
-  margin: 2px 0 0;
+  margin: 0.1rem 0 0;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .list-more {
-  margin-top: 12px;
+  margin-top: 0.4rem;
   text-align: center;
 }
 
@@ -292,14 +315,15 @@ body {
 
 .detail-title {
   margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.4;
+  font-size: 1.2rem;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 /* 內文是純文字：保留使用者打的換行，太長的字（例如網址）自動折行。 */
 .body-text {
-  margin: 12px 0 0;
+  margin: 0.5rem 0 0;
+  line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -311,18 +335,69 @@ body {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+}
+
+/* ── 附圖 ─────────────────────────────────── */
+
+.picture-list {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.picture-frame {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.picture-list img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+
+.picture-input {
+  display: block;
+  max-width: 100%;
+  margin: 0.2rem 0;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.picture-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+  gap: 0.4rem;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picture-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.picture-preview .button {
+  width: 100%;
+  margin-top: 4px;
 }
 
 /* ── 回覆 ─────────────────────────────────── */
 
 .replies {
-  margin-top: 16px;
+  margin-top: 0.6rem;
 }
 
 .section-title {
-  margin: 0 0 4px;
+  margin: 0 0 0.2rem;
   font-size: 1.05rem;
 }
 
@@ -333,20 +408,20 @@ body {
 }
 
 .reply {
-  padding: 12px 0;
+  padding: 0.5rem 0;
   border-bottom: 1px solid var(--line);
 }
 
 .reply .body-text {
-  margin-top: 4px;
+  margin-top: 0.15rem;
 }
 
 .reply .actions {
-  margin-top: 8px;
+  margin-top: 0.3rem;
 }
 
 .replies .form {
-  margin-top: 12px;
+  margin-top: 0.5rem;
   padding: 0;
   border: 0;
 }
@@ -354,32 +429,30 @@ body {
 /* ── 表單 ─────────────────────────────────── */
 
 .field {
-  margin-bottom: 14px;
+  margin-bottom: 0.6rem;
 }
 
 .label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 0.1rem;
   font-weight: 600;
 }
 
-/* 字級不能小於 16px：再小的話，iPhone 點進輸入框時會自動放大整個畫面。 */
 .input {
   display: block;
   width: 100%;
-  min-height: 42px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
+  min-height: 2.5rem;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid var(--line);
   border-radius: var(--radius);
   background: #ffffff;
   color: var(--text);
   font: inherit;
-  font-size: 16px;
 }
 
 .input:focus {
   border-color: var(--accent);
-  outline: 2px solid var(--accent-soft);
+  outline: 3px solid var(--accent-soft);
 }
 
 .input:disabled {
@@ -388,7 +461,7 @@ body {
 }
 
 .textarea {
-  min-height: 120px;
+  min-height: 6rem;
   resize: vertical;
 }
 
@@ -396,7 +469,7 @@ body {
   display: block;
   margin-top: 2px;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   text-align: right;
 }
 
@@ -406,7 +479,7 @@ body {
 }
 
 .form-error {
-  margin: 0 0 8px;
+  margin: 0 0 0.3rem;
   color: var(--danger);
 }
 
@@ -414,11 +487,15 @@ body {
   display: none;
 }
 
-/* ── 後台：成員管理 ───────────────────────── */
+/* ── 後台 ─────────────────────────────────── */
+
+.admin-section {
+  margin-bottom: 0.6rem;
+}
 
 .member-list {
   display: grid;
-  gap: 12px;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -429,7 +506,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 4px 12px;
+  gap: 0.1rem 0.5rem;
 }
 
 .member-email {
@@ -437,23 +514,24 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* 欄位一排放得下幾個就放幾個：手機上一排一個，電腦上一排好幾個。 */
 .member-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.4rem;
 }
 
 .member-field .label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .badge {
-  padding: 1px 10px;
+  padding: 0 0.5rem;
   border-radius: 999px;
   background: var(--bg);
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -469,9 +547,8 @@ body {
 }
 
 .save-message {
-  margin: 8px 0 0;
+  margin: 0.3rem 0 0;
   color: var(--ok);
-  font-size: 0.9rem;
 }
 
 .save-message:empty {
@@ -485,8 +562,8 @@ body {
 /* ── 確認視窗 ─────────────────────────────── */
 
 .dialog {
-  width: min(340px, calc(100vw - 48px));
-  padding: 20px;
+  width: min(22rem, calc(100vw - 24px));
+  padding: 0.7rem;
   border: 0;
   border-radius: var(--radius);
   color: var(--text);
@@ -502,15 +579,16 @@ body {
 
 .dialog-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 20px;
+  gap: 0.3rem;
+  margin-top: 0.7rem;
 }
 
 /* ── 預留的頁籤 ───────────────────────────── */
 
 .placeholder {
-  padding: 40px 16px;
+  padding: 1.2rem 0.6rem;
   color: var(--muted);
   text-align: center;
 }

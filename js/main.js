@@ -36,7 +36,10 @@ import {
   unreachableScreen,
 } from "./screens.js";
 import { clearSession, getAccount, getToken, isStaff, setAccount } from "./session.js";
-import { el, showLoading } from "./ui.js";
+import { el, fill, showLoading } from "./ui.js";
+
+// 還不能使用論壇的人，頁首在名字旁邊標出他現在的狀態。
+const STATE_LABELS = { unregistered: "未註冊", pending: "審核中", disabled: "已停用" };
 
 const view = document.getElementById("view");
 const tabs = document.getElementById("tabs");
@@ -81,13 +84,28 @@ async function start() {
   applyAccount(account);
 }
 
+/**
+ * 把網址 # 後面的部分清掉。
+ *
+ * # 後面記的是「正在看論壇的哪個畫面」（例如 #/admin 是後台）。還不能使用論壇的人、
+ * 剛登出的人都不在任何一個畫面上，網址卻還留著上一位使用者停的位置就不對了。
+ * 用 replaceState，不會多一筆上一頁的紀錄，也不會觸發換畫面。
+ */
+function clearRoute() {
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+}
+
 /** 拿到帳號狀態之後，顯示對應的畫面。 */
 function applyAccount(account) {
   setAccount(account);
   renderAccountBox();
   tabs.hidden = account.state !== "approved";
-  if (account.state === "approved") render();
-  else if (account.state === "unregistered") registerScreen(freshBox(), account, applyAccount);
+  if (account.state === "approved") {
+    render();
+    return;
+  }
+  clearRoute();
+  if (account.state === "unregistered") registerScreen(freshBox(), account, applyAccount);
   else if (account.state === "pending") pendingScreen(freshBox(), start);
   else disabledScreen(freshBox());
 }
@@ -104,6 +122,8 @@ function signOut() {
   api.post("/auth/logout", undefined, { reauth: false }).catch(() => {});
   forgetGoogleAccount();
   clearSession();
+  // 下一位在這台裝置登入的人從頭開始，不接續這一位停的畫面。
+  clearRoute();
   showLogin();
 }
 
@@ -120,8 +140,10 @@ function renderAccountBox() {
     ? `${account.user.display_name}（${roleLabel(account.user.role)}）`
     : account.email;
   accountBox.hidden = false;
-  accountBox.replaceChildren(
+  fill(
+    accountBox,
     el("span", { class: "account-name", text: name }),
+    !approved && el("span", { class: "account-state", text: STATE_LABELS[account.state] }),
     approved && isStaff() && el("a", { class: "account-link", href: "#/admin", text: "後台" }),
     el("button", { class: "account-link", type: "button", text: "登出", onClick: signOut }),
   );

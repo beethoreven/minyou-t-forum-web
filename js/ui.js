@@ -20,6 +20,19 @@ export function el(tag, props = {}, ...children) {
   return node;
 }
 
+/**
+ * 把 container 的內容換成 children，會略過 false、null、undefined。
+ *
+ * 畫面上常寫「條件 && 元素」：條件成立才放那個元素。條件不成立時，那一格的值是 false。
+ * el() 會略過它；但直接呼叫 container.replaceChildren(…) 不會，false 會被當成文字，
+ * 畫面上就多出「false」五個字。所以內容裡有條件的時候，一律用這個函式。
+ */
+export function fill(container, ...children) {
+  container.replaceChildren(
+    ...children.filter((child) => child !== null && child !== undefined && child !== false),
+  );
+}
+
 /** 在 container 裡顯示「載入中」。 */
 export function showLoading(container) {
   const status = el("p", { class: "status", role: "status", text: "載入中…" });

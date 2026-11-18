@@ -39,6 +39,8 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 
 已審核的成員，畫面由網址 `#` 後面的部分決定，例如 `#/forum/12` 是第 12 篇文章。每個畫面都有自己的網址，所以重新整理會停在原本的畫面。
 
+還不能使用論壇的人（還沒註冊、審核中、已停用）與剛登出的人，網址 `#` 後面的部分會被清掉：他們不在任何一個論壇畫面上，網址不該還留著上一位使用者停的位置（例如後台）。頁首會在他們的名字旁邊標出現在的狀態。
+
 ### 為什麼不用框架，也沒有 build
 
 整個網站是瀏覽器可以直接執行的檔案：`index.html` 用 `<script type="module">` 載入 `js/main.js`，其他檔案用 `import` 互相引用。不用安裝任何東西，改完存檔、重新整理就看得到。
@@ -82,6 +84,24 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 
 下載文件要帶登入憑證，一般的連結帶不了。所以是用程式把檔案抓回來，再交給瀏覽器存檔（`js/documents.js`）。代價是檔案會先整個放在瀏覽器的記憶體裡，單一檔案建議不要超過 20 MB。
 
+### 附圖為什麼先在瀏覽器裡縮小
+
+發文章可以附圖，最多五張。選好的圖片先在瀏覽器裡縮成 480P（短的那一邊最多 480 像素）的 JPEG 才上傳（`js/pictures.js`）。手機拍的照片一張好幾 MB，縮完只有幾十 KB，用手機網路也傳得快，後端也不用做影像處理。
+
+看圖跟下載文件一樣要帶登入憑證，所以也是先用程式把圖抓回來，再交給 `<img>` 顯示。
+
+### 字為什麼這麼大
+
+住戶裡長輩多，整個網站的字級設成瀏覽器預設大小的兩倍。設定只有一行：`css/style.css` 裡的 `html { font-size: 200%; }`。其他尺寸都用 rem 寫，改這一行就會一起縮放。
+
+用百分比而不是固定的像素：使用者自己把瀏覽器的字調大時，這裡會跟著再放大。字變大之後頁籤一排放不下，所以頁籤與後台的欄位都是「一排放得下幾個就放幾個」，手機上會自動折行。Google 的登入按鈕大小是它自己決定的，不會跟著放大，所以另外用 CSS 放大。
+
+### 有條件的內容一律用 fill
+
+畫面上常寫 `條件 && 元素`：條件成立才放那個元素。條件不成立時，那一格的值是 `false`。直接把它交給 `replaceChildren`，瀏覽器會把它當成文字，畫面上就多出「false」五個字。
+
+所以內容裡有條件的時候，一律用 `js/ui.js` 的 `fill` 或 `el`，它們會略過 `false`。
+
 ### 定時碰一下後端，以及它做不到的事
 
 後端放在免費方案的主機時，一陣子沒有請求就會休息，下一個請求要等它醒來，可能要一分鐘。所以只要有人開著頁面，`js/main.js` 就每 10 分鐘向後端的 `/health` 送一個請求，讓它在使用期間保持醒著。
@@ -103,13 +123,16 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 | `js/boards.js` | 公告與論壇的差別 |
 | `js/entries.js` | 公告與文章共用的列表、內容頁、編輯頁 |
 | `js/replies.js` | 文章底下的回覆 |
+| `js/pictures.js` | 文章的附圖：選圖、縮小、顯示 |
 | `js/documents.js` | 社區文檔 |
-| `js/admin.js` | 後台：成員管理 |
+| `js/admin.js` | 後台：新增公告、新增文檔、成員管理 |
 | `js/form.js`、`js/format.js`、`js/ui.js` | 表單檢查、顯示格式、畫面的小工具 |
 
 ### 已知限制
 
-- 內文只有純文字，沒有粗體、清單這類格式，也不能放圖片。
+- 內文只有純文字，沒有粗體、清單這類格式。
+- 文章的附圖只能在發文時選，之後不能更換；公告不能附圖。
+- 後台的「新增文檔」不是在論壇裡上傳，而是打開存放文件的 Google Drive 資料夾，要有那個資料夾的編輯權限才放得進去。
 - 沒有即時更新：進入頁面或重新整理時才抓資料。
 - 沒有搜尋、通知、個人資料頁。要改顯示名稱，請版主或管理員在後台改。
 - 文件下載會先把整個檔案放進瀏覽器的記憶體，不適合很大的檔案。
@@ -173,7 +196,7 @@ python3 -m http.server 8180 --bind 127.0.0.1
 | 網址 `#` 後面的部分 | 畫面 | 誰看得到 |
 |---|---|---|
 | `/announcements` | 社區公告的列表 | 已審核 |
-| `/announcements/new`、`/announcements/<id>/edit` | 新增、編輯公告 | 版主、管理員 |
+| `/announcements/new`、`/announcements/<id>/edit` | 新增、編輯公告。新增的入口在後台 | 版主、管理員 |
 | `/announcements/<id>` | 一則公告 | 已審核 |
 | `/forum` | 社區論壇的列表 | 已審核 |
 | `/forum/new` | 新增文章 | 已審核 |
@@ -181,7 +204,7 @@ python3 -m http.server 8180 --bind 127.0.0.1
 | `/forum/<id>/edit` | 編輯文章 | 作者本人、版主、管理員 |
 | `/documents` | 社區文檔 | 已審核 |
 | `/reserved` | 預留的頁籤 | 已審核 |
-| `/admin` | 後台：成員管理 | 版主、管理員 |
+| `/admin` | 後台：新增公告、新增文檔、成員管理 | 版主、管理員 |
 
 ---
 
@@ -226,6 +249,8 @@ When the page opens, `js/main.js` first establishes the sign-in state and then d
 
 For an approved member, the screen is chosen by the part of the URL after `#`; for example `#/forum/12` is post 12. Every screen has its own URL, so a reload stays on the same screen.
 
+For people who can't use the forum yet (not registered, under review, disabled) and for someone who just signed out, the part of the URL after `#` is cleared: they aren't on any forum screen, so the URL shouldn't keep the place the previous user stopped at (the admin page, say). The header shows their current state next to their name.
+
 ### Why No Framework and No Build
 
 The whole site is files a browser can run directly: `index.html` loads `js/main.js` with `<script type="module">`, and the other files reference each other with `import`. Nothing needs installing; save a change, reload, and it is there.
@@ -269,6 +294,24 @@ Lengths are counted with `[...text].length`, not `text.length`: the latter count
 
 Downloading a document requires the session token, which a plain link can't carry. So the file is fetched by code and then handed to the browser to save (`js/documents.js`). The cost is that the whole file sits in the browser's memory first; a single file should preferably stay under 20 MB.
 
+### Why Pictures Are Shrunk in the Browser First
+
+A post can carry up to five pictures. Each chosen picture is first shrunk in the browser to a 480p JPEG (the shorter side at most 480 pixels) and only then uploaded (`js/pictures.js`). A phone photo is several MB; shrunk, it is a few dozen KB, quick to send even on mobile data, and the backend needs no image processing.
+
+Viewing a picture requires the session token just like downloading a document, so the picture is likewise fetched by code and then handed to an `<img>`.
+
+### Why the Text Is So Large
+
+Many residents are elderly, so the whole site's text is set to twice the browser's default size. It is one line: `html { font-size: 200%; }` in `css/style.css`. Every other size is written in rem, so changing that line scales everything together.
+
+A percentage is used rather than fixed pixels: when a user enlarges text in their own browser, this grows with it. With larger text the tabs no longer fit on one row, so the tabs and the admin page's fields are laid out as "as many per row as fit" and wrap on a phone. Google's sign-in button picks its own size and doesn't grow with the text, so it is enlarged separately with CSS.
+
+### Always Use `fill` for Conditional Content
+
+Screens often say `condition && element`: put the element there only when the condition holds. When it doesn't, that slot's value is `false`. Hand it straight to `replaceChildren` and the browser treats it as text, so the word "false" shows up on the page.
+
+So whenever content is conditional, use `fill` or `el` from `js/ui.js`; both skip `false`.
+
 ### The Periodic Request to the Backend, and What It Can't Do
 
 On a free-tier host, the backend goes to sleep after a while without requests, and the next request waits for it to wake, possibly for a minute. So as long as someone has the page open, `js/main.js` sends a request to the backend's `/health` every 10 minutes to keep it awake during use.
@@ -290,13 +333,16 @@ This does nothing for "the first visitor after a long quiet period": the backend
 | `js/boards.js` | What differs between announcements and the forum |
 | `js/entries.js` | The list, detail and editor screens shared by announcements and posts |
 | `js/replies.js` | Replies under a post |
+| `js/pictures.js` | Post pictures: choosing, shrinking, displaying |
 | `js/documents.js` | Community documents |
-| `js/admin.js` | Admin page: member management |
+| `js/admin.js` | Admin page: new announcement, add document, member management |
 | `js/form.js`, `js/format.js`, `js/ui.js` | Form checks, display formats, small screen helpers |
 
 ### Known Limitations
 
-- Bodies are plain text only: no formatting such as bold or lists, and no images.
+- Bodies are plain text only: no formatting such as bold or lists.
+- A post's pictures can only be chosen when the post is created and can't be replaced afterwards; announcements can't carry pictures.
+- "Add document" on the admin page doesn't upload through the forum; it opens the Google Drive folder the documents are kept in, and putting a file there requires edit access to that folder.
 - Nothing updates live: data is fetched when a screen is entered or reloaded.
 - There is no search, no notifications, and no profile page. To change a display name, ask a moderator or administrator to change it on the admin page.
 - A document download holds the whole file in the browser's memory first, so it doesn't suit very large files.
@@ -360,7 +406,7 @@ All settings are in `js/config.js`; neither is a secret.
 | Part of the URL after `#` | Screen | Who can see it |
 |---|---|---|
 | `/announcements` | The announcement list | Approved |
-| `/announcements/new`, `/announcements/<id>/edit` | Create or edit an announcement | Moderator, administrator |
+| `/announcements/new`, `/announcements/<id>/edit` | Create or edit an announcement. The way in to "create" is on the admin page | Moderator, administrator |
 | `/announcements/<id>` | One announcement | Approved |
 | `/forum` | The forum list | Approved |
 | `/forum/new` | Create a post | Approved |
@@ -368,4 +414,4 @@ All settings are in `js/config.js`; neither is a secret.
 | `/forum/<id>/edit` | Edit a post | The author, moderator, administrator |
 | `/documents` | Community documents | Approved |
 | `/reserved` | The reserved tab | Approved |
-| `/admin` | Admin page: member management | Moderator, administrator |
+| `/admin` | Admin page: new announcement, add document, member management | Moderator, administrator |

@@ -1,28 +1,100 @@
-// 後台：成員管理。版主與管理員用它審核申請、調整角色、停用帳號。
+// 後台。版主與管理員用它新增公告、新增文檔、管理成員。
 //
 // 這裡把不能改的欄位鎖起來只是為了好操作；能不能改，最後是 backend 決定的。
 
 import { api } from "./api.js";
 import { formatTime } from "./format.js";
 import { getUser } from "./session.js";
-import { el, showError, showLoading } from "./ui.js";
+import { el, fill, showError, showLoading } from "./ui.js";
 
 const ROLE_LABELS = { member: "一般使用者", moderator: "版主", admin: "管理員" };
 const STATUS_LABELS = { pending: "審核中", approved: "已審核", disabled: "已停用" };
 
-export async function adminView(container) {
-  const content = el("div");
-  container.replaceChildren(
-    el("div", { class: "toolbar" }, el("h2", { class: "page-title", text: "後台：成員管理" })),
-    content,
+export function adminView(container) {
+  const documentsBox = el("div");
+  const membersBox = el("div");
+  fill(
+    container,
+    el("div", { class: "toolbar" }, el("h2", { class: "page-title", text: "後台" })),
+    el(
+      "section",
+      { class: "card admin-section" },
+      el("h3", { class: "section-title", text: "公告" }),
+      el("p", { class: "card-text", text: "發布給所有住戶看的公告。要修改或刪除，到「社區公告」點進那一則。" }),
+      el("a", { class: "button button-primary", href: "#/announcements/new", text: "新增公告" }),
+    ),
+    el(
+      "section",
+      { class: "card admin-section" },
+      el("h3", { class: "section-title", text: "文檔" }),
+      documentsBox,
+    ),
+    el(
+      "section",
+      { class: "admin-section" },
+      el("h3", { class: "section-title", text: "成員管理" }),
+      membersBox,
+    ),
   );
+  loadDocuments(documentsBox);
+  loadMembers(membersBox);
+}
 
-  showLoading(content);
+// ── 文檔 ─────────────────────────────────────────────────
+
+/**
+ * 文檔不經過論壇上傳，而是直接放進存放的地方（正式環境是 Google Drive 的一個資料夾）。
+ * 這裡給一顆按鈕把那個資料夾打開。
+ */
+async function loadDocuments(box) {
+  showLoading(box);
+  let info;
+  try {
+    info = await api.get("/admin/documents");
+  } catch (error) {
+    showError(box, error, () => loadDocuments(box));
+    return;
+  }
+
+  if (info.manage_url) {
+    fill(
+      box,
+      el("p", {
+        class: "card-text",
+        text: "文檔放在 Google Drive 的資料夾裡。按下面的按鈕會開啟那個資料夾，把檔案放進去，回到「社區文檔」重新整理就看得到。要刪除或改名，也在那個資料夾裡做。",
+      }),
+      el("a", {
+        class: "button button-primary",
+        href: info.manage_url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        text: "新增文檔",
+      }),
+      el("p", {
+        class: "entry-meta",
+        text: "只有一般檔案（PDF、Word、圖片等）會出現在「社區文檔」。要有那個資料夾的編輯權限才放得進去。",
+      }),
+    );
+    return;
+  }
+  fill(
+    box,
+    el("p", {
+      class: "card-text",
+      text: `文檔放在這台電腦的資料夾：${info.location}。把檔案放進去，回到「社區文檔」重新整理就看得到。`,
+    }),
+  );
+}
+
+// ── 成員管理 ─────────────────────────────────────────────
+
+async function loadMembers(box) {
+  showLoading(box);
   let data;
   try {
     data = await api.get("/admin/users");
   } catch (error) {
-    showError(content, error, () => adminView(container));
+    showError(box, error, () => loadMembers(box));
     return;
   }
 
@@ -37,7 +109,8 @@ export async function adminView(container) {
   }
   updateSummary();
 
-  content.replaceChildren(
+  fill(
+    box,
     summary,
     el("ul", { class: "member-list" }, ...data.items.map((item) => memberItem(item, updateSummary))),
   );
@@ -59,7 +132,7 @@ function memberItem(member, onSaved) {
   const approveButton = el("button", { class: "button", type: "button", text: "通過審核" });
 
   /** 把畫面上這一列更新成 member 現在的內容。 */
-  function fill() {
+  function show() {
     nameInput.value = member.display_name;
     unitInput.value = member.unit_no;
 
@@ -101,7 +174,7 @@ function memberItem(member, onSaved) {
         status: statusSelect.value,
       });
       member = result.item;
-      fill();
+      show();
       onSaved(member);
       message.textContent = result.changed ? "已儲存" : "沒有修改";
     } catch (error) {
@@ -118,7 +191,7 @@ function memberItem(member, onSaved) {
     statusSelect.value = "approved";
     save();
   });
-  fill();
+  show();
 
   return el(
     "li",

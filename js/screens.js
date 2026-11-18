@@ -103,7 +103,13 @@ export function pendingScreen(container, onRefresh) {
       "section",
       { class: "card card-center" },
       el("h2", { class: "page-title", text: "審核中" }),
-      el("p", { class: "card-text", text: "申請已經送出，正在等管理員審核。審核通過之後，按下面的按鈕或重新整理這個頁面就能進入。" }),
+      el(
+        "p",
+        { class: "card-text" },
+        "申請已經送出，正在等管理員審核。",
+        el("br"),
+        "審核通過之後，按下面的按鈕或重新整理這個頁面就能進入。",
+      ),
       el("button", { class: "button", type: "button", text: "重新確認", onClick: onRefresh }),
     ),
   );

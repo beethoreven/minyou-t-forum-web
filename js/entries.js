@@ -3,8 +3,10 @@
 import { api } from "./api.js";
 import { checkText, showCount } from "./form.js";
 import { formatTime, textToNodes } from "./format.js";
+import { pictureGallery, picturePicker } from "./pictures.js";
 import { replySection } from "./replies.js";
-import { confirmDialog, el, showError, showLoading } from "./ui.js";
+import { getAccount } from "./session.js";
+import { confirmDialog, el, fill, showError, showLoading } from "./ui.js";
 
 // 跟 backend 的上限一致。
 const TITLE_MAX = 100;
@@ -14,12 +16,14 @@ const BODY_MAX = 10000;
 export function listView(board, container) {
   const list = el("ul", { class: "entry-list" });
   const more = el("div", { class: "list-more" });
-  container.replaceChildren(
+  fill(
+    container,
     el(
       "div",
       { class: "toolbar" },
       el("h2", { class: "page-title", text: board.title }),
-      board.canCreate() &&
+      board.createOnList &&
+        board.canCreate() &&
         el("a", { class: "button button-primary", href: `${board.route}/new`, text: `新增${board.noun}` }),
     ),
     list,
@@ -53,21 +57,22 @@ export function listView(board, container) {
       lastId = item.id;
     }
     if (lastId === null) {
-      more.replaceChildren(el("p", { class: "status", text: `目前沒有${board.noun}` }));
+      fill(more, el("p", { class: "status", text: `目前沒有${board.noun}` }));
     } else if (page.has_more) {
-      more.replaceChildren(el("button", { class: "button", type: "button", text: "載入更多", onClick: loadPage }));
+      fill(more, el("button", { class: "button", type: "button", text: "載入更多", onClick: loadPage }));
     } else {
-      more.replaceChildren();
+      fill(more);
     }
   }
 
   loadPage();
 }
 
-/** 內容頁：標題、作者、時間、內文，以及編輯與刪除。文章還多了回覆。 */
+/** 內容頁：標題、作者、時間、內文、附圖，以及編輯與刪除。文章還多了回覆。 */
 export async function detailView(board, container, id) {
   const content = el("div");
-  container.replaceChildren(
+  fill(
+    container,
     el("a", { class: "back-link", href: board.route, text: `← 回${board.noun}列表` }),
     content,
   );
@@ -97,13 +102,16 @@ export async function detailView(board, container, id) {
     }
   });
 
-  content.replaceChildren(
+  const images = entry.images || [];
+  fill(
+    content,
     el(
       "article",
       { class: "entry-detail" },
       el("h2", { class: "detail-title", text: entry.title }),
       el("p", { class: "entry-meta", text: `${entry.author_name}・${formatTime(entry.created_at)}` }),
       el("div", { class: "body-text" }, textToNodes(entry.body)),
+      images.length > 0 && pictureGallery(id, images),
       board.canModify(entry) &&
         el(
           "div",
@@ -121,8 +129,13 @@ export async function detailView(board, container, id) {
 export async function editorView(board, container, id = null) {
   const isEdit = id !== null;
   const content = el("div");
-  container.replaceChildren(
-    el("a", { class: "back-link", href: isEdit ? `${board.route}/${id}` : board.route, text: "← 取消" }),
+  fill(
+    container,
+    el("a", {
+      class: "back-link",
+      href: isEdit ? `${board.route}/${id}` : board.createCancelRoute,
+      text: "← 取消",
+    }),
     content,
   );
 
@@ -138,20 +151,23 @@ export async function editorView(board, container, id = null) {
   }
   // 直接打網址進到這一頁、卻沒有權限的人，先講清楚，不要讓他填完才被 backend 拒絕。
   if (isEdit ? !board.canModify(entry) : !board.canCreate()) {
-    content.replaceChildren(
-      el("p", { class: "status", text: `你沒有${isEdit ? "編輯這則" : "新增"}${board.noun}的權限` }),
-    );
+    fill(content, el("p", { class: "status", text: `你沒有${isEdit ? "編輯這則" : "新增"}${board.noun}的權限` }));
     return;
   }
 
   const titleInput = el("input", { class: "input", id: "entry-title", type: "text", autocomplete: "off" });
-  const bodyInput = el("textarea", { class: "input textarea", id: "entry-body", rows: "12" });
+  const bodyInput = el("textarea", { class: "input textarea", id: "entry-body", rows: "8" });
   titleInput.value = entry.title;
   bodyInput.value = entry.body;
   const titleCounter = el("span", { class: "counter" });
   const bodyCounter = el("span", { class: "counter" });
   const formError = el("p", { class: "form-error", role: "alert" });
   const submitButton = el("button", { class: "button button-primary", type: "submit", text: isEdit ? "儲存" : "發布" });
+
+  // 附圖只在發新文章時可以選。這個服務沒開放附圖的話就不顯示。
+  const account = getAccount();
+  const canPick = board.hasPictures && !isEdit && Boolean(account && account.can_attach_pictures);
+  const picker = canPick ? picturePicker() : null;
 
   function updateCounters() {
     showCount(titleCounter, titleInput.value, TITLE_MAX);
@@ -173,11 +189,13 @@ export async function editorView(board, container, id = null) {
     }
     // 送出期間把按鈕鎖住，連按兩下才不會發出兩篇。
     submitButton.disabled = true;
-    formError.textContent = "";
+    formError.textContent = picker ? "上傳中，請稍候…" : "";
     try {
+      const payload = { title, body };
+      if (picker) payload.images = await picker.encode();
       const saved = isEdit
-        ? await api.put(`${board.api}/${id}`, { title, body })
-        : await api.post(board.api, { title, body });
+        ? await api.put(`${board.api}/${id}`, payload)
+        : await api.post(board.api, payload);
       location.hash = `${board.route}/${saved.id}`;
     } catch (error) {
       formError.textContent = error.message;
@@ -185,7 +203,8 @@ export async function editorView(board, container, id = null) {
     }
   }
 
-  content.replaceChildren(
+  fill(
+    content,
     el(
       "form",
       { class: "form", novalidate: true, onSubmit: submit },
@@ -204,6 +223,10 @@ export async function editorView(board, container, id = null) {
         bodyInput,
         bodyCounter,
       ),
+      picker && picker.element,
+      isEdit &&
+        (entry.images || []).length > 0 &&
+        el("p", { class: "entry-meta", text: "這篇文章的附圖不能在這裡更換。要換圖請刪除文章重新發。" }),
       formError,
       submitButton,
     ),
