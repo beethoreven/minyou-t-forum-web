@@ -2,7 +2,7 @@
 
 ## 老爺華廈論壇 — 前端
 
-小社區住戶論壇的前端網站：登入、註冊、四個頁籤（社區公告、社區論壇、社區文檔，以及一個預留的），加上管理成員的後台。這份文件分成兩個獨立的部分，請依需求閱讀：
+小社區住戶論壇的前端網站：登入、註冊、四個頁籤（社區公告、社區論壇、社區文檔，以及一個預留的），加上新增公告、上傳文檔、管理成員的後台。這份文件分成兩個獨立的部分，請依需求閱讀：
 
 - **[專案報告](#專案報告)**：這個網站是什麼、怎麼串起來的、每個決定的理由 —— 給想了解「這是什麼」的人看。
 - **[架設 SOP](#架設-sop)**：一步一步的操作說明 —— 給想「動手把它跑起來」的人看。
@@ -84,9 +84,19 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 
 下載文件要帶登入憑證，一般的連結帶不了。所以是用程式把檔案抓回來，再交給瀏覽器存檔（`js/documents.js`）。代價是檔案會先整個放在瀏覽器的記憶體裡，單一檔案建議不要超過 20 MB。
 
+### 後台的文檔上傳為什麼只有一顆按鈕
+
+後台的「上傳文檔」按下去就是選檔案，選好就開始上傳，可以一次選好幾個（`js/admin.js`）。沒有「先選、再按送出」兩個步驟，畫面上也看不到檔案實際放在哪裡：操作的人只需要知道「檔案丟上去，住戶就下載得到」。
+
+- 太大的檔案在瀏覽器就先擋下來，不用等整個檔案傳完才被後端拒絕。上限是後端告訴前端的，不是兩邊各寫一個數字。
+- 一次選好幾個時一個一個傳，哪一個沒傳上去會個別說明，不會因為一個失敗就整批都不算。
+- 上傳或刪除之後，清單重新向後端要一次，以後端說的為準。
+- 檔案用瀏覽器上傳檔案的標準格式送（`FormData`）。這時 `Content-Type` 要讓瀏覽器自己產生：裡面有一段分隔字串，自己設的話後端會讀不出檔案（`js/api.js`）。
+- 後端還沒開啟上傳功能時，這一塊會改成一顆打開存放資料夾的按鈕，請人直接去那裡放檔案。
+
 ### 附圖為什麼先在瀏覽器裡縮小
 
-發文章可以附圖，最多五張。選好的圖片先在瀏覽器裡縮成 480P（短的那一邊最多 480 像素）的 JPEG 才上傳（`js/pictures.js`）。手機拍的照片一張好幾 MB，縮完只有幾十 KB，用手機網路也傳得快，後端也不用做影像處理。
+公告與文章都可以附圖，最多五張。選好的圖片先在瀏覽器裡縮成 480P（短的那一邊最多 480 像素）的 JPEG 才上傳（`js/pictures.js`）。手機拍的照片一張好幾 MB，縮完只有幾十 KB，用手機網路也傳得快，後端也不用做影像處理。
 
 看圖跟下載文件一樣要帶登入憑證，所以也是先用程式把圖抓回來，再交給 `<img>` 顯示。
 
@@ -123,16 +133,16 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 | `js/boards.js` | 公告與論壇的差別 |
 | `js/entries.js` | 公告與文章共用的列表、內容頁、編輯頁 |
 | `js/replies.js` | 文章底下的回覆 |
-| `js/pictures.js` | 文章的附圖：選圖、縮小、顯示 |
+| `js/pictures.js` | 公告與文章的附圖：選圖、縮小、顯示 |
 | `js/documents.js` | 社區文檔 |
-| `js/admin.js` | 後台：新增公告、新增文檔、成員管理 |
+| `js/admin.js` | 後台：新增公告、上傳與刪除文檔、成員管理 |
 | `js/form.js`、`js/format.js`、`js/ui.js` | 表單檢查、顯示格式、畫面的小工具 |
 
 ### 已知限制
 
 - 內文只有純文字，沒有粗體、清單這類格式。
-- 文章的附圖只能在發文時選，之後不能更換；公告不能附圖。
-- 後台的「新增文檔」不是在論壇裡上傳，而是打開存放文件的 Google Drive 資料夾，要有那個資料夾的編輯權限才放得進去。
+- 公告與文章的附圖只能在新增時選，之後不能更換。
+- 後台上傳的文檔一個最多 10 MB（上限由後端決定）。上傳時沒有進度條，只顯示現在傳到第幾個。
 - 沒有即時更新：進入頁面或重新整理時才抓資料。
 - 沒有搜尋、通知、個人資料頁。要改顯示名稱，請版主或管理員在後台改。
 - 文件下載會先把整個檔案放進瀏覽器的記憶體，不適合很大的檔案。
@@ -204,7 +214,7 @@ python3 -m http.server 8180 --bind 127.0.0.1
 | `/forum/<id>/edit` | 編輯文章 | 作者本人、版主、管理員 |
 | `/documents` | 社區文檔 | 已審核 |
 | `/reserved` | 預留的頁籤 | 已審核 |
-| `/admin` | 後台：新增公告、新增文檔、成員管理 | 版主、管理員 |
+| `/admin` | 後台：新增公告、上傳與刪除文檔、成員管理 | 版主、管理員 |
 
 ---
 
@@ -212,7 +222,7 @@ python3 -m http.server 8180 --bind 127.0.0.1
 
 ## 老爺華廈論壇 — Frontend
 
-The frontend of a small residents' forum: sign-in, registration, four tabs (announcements, forum, documents, and one reserved), plus an admin page for managing members. This document has two independent parts; read whichever you need:
+The frontend of a small residents' forum: sign-in, registration, four tabs (announcements, forum, documents, and one reserved), plus an admin page for adding announcements, uploading documents and managing members. This document has two independent parts; read whichever you need:
 
 - **[Project Report](#project-report)**: what this site is, how it fits together, and the reason behind each decision — for readers who want to understand it.
 - **[Setup Guide](#setup-guide)**: step-by-step instructions — for readers who want to get it running.
@@ -294,9 +304,19 @@ Lengths are counted with `[...text].length`, not `text.length`: the latter count
 
 Downloading a document requires the session token, which a plain link can't carry. So the file is fetched by code and then handed to the browser to save (`js/documents.js`). The cost is that the whole file sits in the browser's memory first; a single file should preferably stay under 20 MB.
 
+### Why Uploading a Document Is a Single Button
+
+"Upload documents" on the admin page opens the file chooser, and the upload starts as soon as files are chosen; several can be chosen at once (`js/admin.js`). There is no separate "choose, then submit" step, and nothing on screen says where the files actually live: the person using it only needs to know that a file put here becomes downloadable by residents.
+
+- A file that is too large is stopped in the browser, rather than being refused by the backend after the whole file has been sent. The limit comes from the backend, so the number isn't written in two places.
+- When several files are chosen they are sent one at a time, and each failure is reported on its own; one failure doesn't void the whole batch.
+- After an upload or a delete, the list is requested from the backend again, and what the backend says is what is shown.
+- The file is sent in the browser's standard format for file uploads (`FormData`). The `Content-Type` must then be left for the browser to generate: it contains a boundary string, and if it is set by hand the backend can't read the file (`js/api.js`).
+- While the backend hasn't turned uploads on, this block becomes a single button that opens the folder the documents are kept in, asking people to put files there directly.
+
 ### Why Pictures Are Shrunk in the Browser First
 
-A post can carry up to five pictures. Each chosen picture is first shrunk in the browser to a 480p JPEG (the shorter side at most 480 pixels) and only then uploaded (`js/pictures.js`). A phone photo is several MB; shrunk, it is a few dozen KB, quick to send even on mobile data, and the backend needs no image processing.
+Announcements and posts can each carry up to five pictures. Each chosen picture is first shrunk in the browser to a 480p JPEG (the shorter side at most 480 pixels) and only then uploaded (`js/pictures.js`). A phone photo is several MB; shrunk, it is a few dozen KB, quick to send even on mobile data, and the backend needs no image processing.
 
 Viewing a picture requires the session token just like downloading a document, so the picture is likewise fetched by code and then handed to an `<img>`.
 
@@ -333,16 +353,16 @@ This does nothing for "the first visitor after a long quiet period": the backend
 | `js/boards.js` | What differs between announcements and the forum |
 | `js/entries.js` | The list, detail and editor screens shared by announcements and posts |
 | `js/replies.js` | Replies under a post |
-| `js/pictures.js` | Post pictures: choosing, shrinking, displaying |
+| `js/pictures.js` | Pictures on announcements and posts: choosing, shrinking, displaying |
 | `js/documents.js` | Community documents |
-| `js/admin.js` | Admin page: new announcement, add document, member management |
+| `js/admin.js` | Admin page: new announcement, uploading and deleting documents, member management |
 | `js/form.js`, `js/format.js`, `js/ui.js` | Form checks, display formats, small screen helpers |
 
 ### Known Limitations
 
 - Bodies are plain text only: no formatting such as bold or lists.
-- A post's pictures can only be chosen when the post is created and can't be replaced afterwards; announcements can't carry pictures.
-- "Add document" on the admin page doesn't upload through the forum; it opens the Google Drive folder the documents are kept in, and putting a file there requires edit access to that folder.
+- The pictures of an announcement or post can only be chosen when it is created and can't be replaced afterwards.
+- A document uploaded from the admin page may be at most 10 MB (the backend sets the limit). There is no progress bar during an upload, only which file is being sent.
 - Nothing updates live: data is fetched when a screen is entered or reloaded.
 - There is no search, no notifications, and no profile page. To change a display name, ask a moderator or administrator to change it on the admin page.
 - A document download holds the whole file in the browser's memory first, so it doesn't suit very large files.
@@ -414,4 +434,4 @@ All settings are in `js/config.js`; neither is a secret.
 | `/forum/<id>/edit` | Edit a post | The author, moderator, administrator |
 | `/documents` | Community documents | Approved |
 | `/reserved` | The reserved tab | Approved |
-| `/admin` | Admin page: new announcement, add document, member management | Moderator, administrator |
+| `/admin` | Admin page: new announcement, uploading and deleting documents, member management | Moderator, administrator |

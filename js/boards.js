@@ -13,8 +13,7 @@ export const announcements = {
   title: "社區公告",
   noun: "公告",
   hasReplies: false,
-  hasPictures: false,
-  deleteConfirm: "確定要刪除這則公告嗎？刪除後無法復原。",
+  deleteConfirm: "確定要刪除這則公告嗎？附圖會一起刪除，刪除後無法復原。",
   listMeta: (item) => formatTime(item.created_at),
   // 公告只有版主與管理員能發、改、刪。
   canCreate: () => isStaff(),
@@ -31,7 +30,6 @@ export const forum = {
   title: "社區論壇",
   noun: "文章",
   hasReplies: true,
-  hasPictures: true, // 發文時可以附圖
   deleteConfirm: "確定要刪除這篇文章嗎？底下的回覆與附圖會一起刪除，刪除後無法復原。",
   listMeta: (item) =>
     `${item.author_name}・${formatTime(item.created_at)}・${item.reply_count} 則回覆`,

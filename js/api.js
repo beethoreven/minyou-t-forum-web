@@ -28,7 +28,10 @@ async function send(method, path, body, withSession) {
   const options = { method, headers: {} };
   const token = getToken();
   if (withSession && token) options.headers.Authorization = `Bearer ${token}`;
-  if (body !== undefined) {
+  if (body instanceof FormData) {
+    // 上傳檔案用的表單。Content-Type 不能自己設：裡面有一段分隔字串，要讓瀏覽器自己產生。
+    options.body = body;
+  } else if (body !== undefined) {
     options.headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(body);
   }
@@ -96,5 +99,12 @@ export const api = {
   /** 下載檔案，回傳檔案內容（Blob）。 */
   async download(path) {
     return (await fetchOk("GET", path)).blob();
+  },
+
+  /** 上傳一個檔案。file 是使用者在 <input type="file"> 選的那個檔案。 */
+  upload(path, file) {
+    const form = new FormData();
+    form.append("file", file); // backend 讀的欄位名稱就叫 file
+    return request("POST", path, form);
   },
 };

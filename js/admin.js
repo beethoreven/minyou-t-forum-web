@@ -1,11 +1,11 @@
-// 後台。版主與管理員用它新增公告、新增文檔、管理成員。
+// 後台。版主與管理員用它新增公告、上傳與刪除文檔、管理成員。
 //
 // 這裡把不能改的欄位鎖起來只是為了好操作；能不能改，最後是 backend 決定的。
 
 import { api } from "./api.js";
-import { formatTime } from "./format.js";
+import { formatSize, formatTime } from "./format.js";
 import { getUser } from "./session.js";
-import { el, fill, showError, showLoading } from "./ui.js";
+import { confirmDialog, el, fill, showError, showLoading } from "./ui.js";
 
 const ROLE_LABELS = { member: "一般使用者", moderator: "版主", admin: "管理員" };
 const STATUS_LABELS = { pending: "審核中", approved: "已審核", disabled: "已停用" };
@@ -43,46 +43,160 @@ export function adminView(container) {
 // ── 文檔 ─────────────────────────────────────────────────
 
 /**
- * 文檔不經過論壇上傳，而是直接放進存放的地方（正式環境是 Google Drive 的一個資料夾）。
- * 這裡給一顆按鈕把那個資料夾打開。
+ * 文檔的管理：上傳、列出、刪除。上傳的檔案會出現在「社區文檔」頁籤，住戶都能下載。
+ *
+ * 操作的人不用知道檔案實際放在哪裡：選好檔案就會上傳，清單上每個檔案旁邊有「刪除」。
  */
 async function loadDocuments(box) {
   showLoading(box);
   let info;
+  let files;
   try {
-    info = await api.get("/admin/documents");
+    // 兩件事互不相干，一起問比較快：能不能上傳，以及現在有哪些文檔。
+    [info, files] = await Promise.all([api.get("/admin/documents"), api.get("/documents")]);
   } catch (error) {
     showError(box, error, () => loadDocuments(box));
     return;
   }
 
-  if (info.manage_url) {
+  if (!info.can_upload) {
+    // 伺服器還沒設定好代為存檔的服務。在那之前，只能請人直接到存放的資料夾放檔案。
     fill(
       box,
       el("p", {
         class: "card-text",
-        text: "文檔放在 Google Drive 的資料夾裡。按下面的按鈕會開啟那個資料夾，把檔案放進去，回到「社區文檔」重新整理就看得到。要刪除或改名，也在那個資料夾裡做。",
+        text: "還沒有開啟從這裡上傳的功能。在開啟之前，要新增或刪除文檔，請按下面的按鈕打開存放文檔的資料夾，直接在裡面操作。",
       }),
-      el("a", {
-        class: "button button-primary",
-        href: info.manage_url,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        text: "新增文檔",
-      }),
-      el("p", {
-        class: "entry-meta",
-        text: "只有一般檔案（PDF、Word、圖片等）會出現在「社區文檔」。要有那個資料夾的編輯權限才放得進去。",
-      }),
+      info.manage_url &&
+        el("a", {
+          class: "button button-primary",
+          href: info.manage_url,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          text: "開啟文檔的資料夾",
+        }),
     );
     return;
   }
+
+  // 給人看的上限，例如「10 MB」。
+  const limit = `${Math.round(info.max_bytes / 1024 / 1024)} MB`;
+  const input = el("input", { type: "file", multiple: true, hidden: true });
+  const uploadButton = el("button", {
+    class: "button button-primary",
+    type: "button",
+    text: "上傳文檔",
+    // 真正的檔案選擇框藏起來，用這顆按鈕打開它：樣子才會跟其他按鈕一致。
+    onClick: () => input.click(),
+  });
+  const message = el("p", { class: "save-message", role: "status" });
+  const list = el("ul", { class: "document-list" });
+  const empty = el("p", { class: "entry-meta", text: "目前沒有文檔。" });
+
+  /** 在按鈕下面顯示幾行話：notes 是一般的訊息，problems 是出了問題的，用警示的顏色。 */
+  function report(notes, problems = []) {
+    message.replaceChildren(
+      ...notes.map((line) => el("span", { class: "message-line", text: line })),
+      ...problems.map((line) => el("span", { class: "message-line save-message-error", text: line })),
+    );
+  }
+
+  function showFiles(items) {
+    empty.hidden = items.length > 0;
+    list.replaceChildren(...items.map((file) => documentRow(file, removeFile)));
+  }
+
+  /** 重新向伺服器要一次清單。上傳或刪除之後，以伺服器說的為準。 */
+  async function reloadFiles() {
+    try {
+      showFiles((await api.get("/documents")).items);
+    } catch {
+      // 清單暫時拿不到就維持原樣，不要蓋掉剛剛顯示的上傳結果。重新整理頁面就會更新。
+    }
+  }
+
+  async function removeFile(file) {
+    const sure = await confirmDialog(`確定要刪除「${file.name}」嗎？刪除後住戶就下載不到了。`, "刪除");
+    if (!sure) return;
+    report([`刪除中：${file.name}`]);
+    try {
+      await api.delete(`/admin/documents/${file.id}`);
+      report([`已刪除「${file.name}」`]);
+    } catch (error) {
+      report([], [`「${file.name}」沒有刪掉：${error.message}`]);
+    }
+    await reloadFiles();
+  }
+
+  input.addEventListener("change", async () => {
+    const chosen = [...input.files];
+    input.value = ""; // 清掉，下次才能再選到同一個檔案
+    if (chosen.length === 0) return;
+
+    // 上傳期間把按鈕鎖住，才不會同時送出兩批。
+    uploadButton.disabled = true;
+    const problems = [];
+    let uploaded = 0;
+    for (const [index, file] of chosen.entries()) {
+      report([`上傳中（${index + 1}/${chosen.length}）：${file.name}`]);
+      // 太大的先擋下來，不用等整個檔案傳完才被伺服器拒絕。
+      if (file.size > info.max_bytes) {
+        problems.push(`「${file.name}」太大了，一個檔案最多 ${limit}`);
+        continue;
+      }
+      try {
+        await api.upload("/admin/documents", file);
+        uploaded += 1;
+      } catch (error) {
+        problems.push(`「${file.name}」沒有傳上去：${error.message}`);
+      }
+    }
+    uploadButton.disabled = false;
+
+    report(uploaded > 0 ? [`已上傳 ${uploaded} 個檔案`] : [], problems);
+    await reloadFiles();
+  });
+
   fill(
     box,
     el("p", {
       class: "card-text",
-      text: `文檔放在這台電腦的資料夾：${info.location}。把檔案放進去，回到「社區文檔」重新整理就看得到。`,
+      text: `上傳的檔案會出現在「社區文檔」，住戶都能下載。可以一次選好幾個，一個檔案最多 ${limit}。上傳同名的檔案，會取代原本那一個。`,
     }),
+    uploadButton,
+    input,
+    message,
+    el("h4", { class: "list-title", text: "目前的文檔" }),
+    empty,
+    list,
+  );
+  showFiles(files.items);
+}
+
+/** 文檔清單的一列：檔名、時間與大小、刪除按鈕。 */
+function documentRow(file, onDelete) {
+  const deleteButton = el("button", {
+    class: "button button-danger button-small",
+    type: "button",
+    text: "刪除",
+    "aria-label": `刪除 ${file.name}`,
+  });
+  deleteButton.addEventListener("click", async () => {
+    // 處理期間把這顆按鈕鎖住，連按兩下才不會刪兩次。
+    deleteButton.disabled = true;
+    await onDelete(file);
+    deleteButton.disabled = false;
+  });
+  return el(
+    "li",
+    { class: "document-row" },
+    el(
+      "div",
+      { class: "document-info" },
+      el("span", { class: "entry-title", text: file.name }),
+      el("span", { class: "entry-meta", text: `${formatTime(file.modified_time)}・${formatSize(file.size)}` }),
+    ),
+    deleteButton,
   );
 }
 

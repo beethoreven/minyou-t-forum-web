@@ -5,7 +5,6 @@ import { checkText, showCount } from "./form.js";
 import { formatTime, textToNodes } from "./format.js";
 import { pictureGallery, picturePicker } from "./pictures.js";
 import { replySection } from "./replies.js";
-import { getAccount } from "./session.js";
 import { confirmDialog, el, fill, showError, showLoading } from "./ui.js";
 
 // 跟 backend 的上限一致。
@@ -111,7 +110,7 @@ export async function detailView(board, container, id) {
       el("h2", { class: "detail-title", text: entry.title }),
       el("p", { class: "entry-meta", text: `${entry.author_name}・${formatTime(entry.created_at)}` }),
       el("div", { class: "body-text" }, textToNodes(entry.body)),
-      images.length > 0 && pictureGallery(id, images),
+      images.length > 0 && pictureGallery(`${board.api}/${id}`, images),
       board.canModify(entry) &&
         el(
           "div",
@@ -164,10 +163,8 @@ export async function editorView(board, container, id = null) {
   const formError = el("p", { class: "form-error", role: "alert" });
   const submitButton = el("button", { class: "button button-primary", type: "submit", text: isEdit ? "儲存" : "發布" });
 
-  // 附圖只在發新文章時可以選。這個服務沒開放附圖的話就不顯示。
-  const account = getAccount();
-  const canPick = board.hasPictures && !isEdit && Boolean(account && account.can_attach_pictures);
-  const picker = canPick ? picturePicker() : null;
+  // 附圖只在新增的時候可以選，發出去之後就不能換。
+  const picker = isEdit ? null : picturePicker();
 
   function updateCounters() {
     showCount(titleCounter, titleInput.value, TITLE_MAX);
@@ -226,7 +223,7 @@ export async function editorView(board, container, id = null) {
       picker && picker.element,
       isEdit &&
         (entry.images || []).length > 0 &&
-        el("p", { class: "entry-meta", text: "這篇文章的附圖不能在這裡更換。要換圖請刪除文章重新發。" }),
+        el("p", { class: "entry-meta", text: "附圖不能在這裡更換。要換圖的話，請刪除後重新發一次。" }),
       formError,
       submitButton,
     ),

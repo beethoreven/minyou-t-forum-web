@@ -1,4 +1,4 @@
-// 文章的附圖：發文時選圖片（最多五張，先縮小再上傳），以及在文章裡把圖片顯示出來。
+// 公告與文章的附圖：新增時選圖片（最多五張，先縮小再上傳），以及在內容頁把圖片顯示出來。
 
 import { api } from "./api.js";
 import { el } from "./ui.js";
@@ -67,7 +67,7 @@ function toBase64(blob) {
 }
 
 /**
- * 發文時選圖片的區塊。回傳 { element, encode }：
+ * 新增公告或文章時選圖片的區塊。回傳 { element, encode }：
  * element 放進表單；送出時呼叫 encode()，拿到要送給 backend 的內容。
  */
 export function picturePicker() {
@@ -113,7 +113,7 @@ export function picturePicker() {
     input.value = ""; // 清掉，下次才能再選到同一個檔案
     for (const file of files) {
       if (chosen.length >= MAX_PICTURES) {
-        message.textContent = `一篇文章最多 ${MAX_PICTURES} 張圖，多選的沒有加進來`;
+        message.textContent = `最多只能附 ${MAX_PICTURES} 張圖，多選的沒有加進來`;
         break;
       }
       try {
@@ -144,18 +144,19 @@ export function picturePicker() {
 }
 
 /**
- * 文章裡的附圖。看圖也要帶登入憑證，所以不能直接把網址放進 <img>：
- * 先用程式把圖抓回來，再交給 <img> 顯示。
+ * 內容頁裡的附圖。entryPath 是那則公告或那篇文章在 backend 的路徑，例如 /posts/12。
+ *
+ * 看圖也要帶登入憑證，所以不能直接把網址放進 <img>：先用程式把圖抓回來，再交給 <img> 顯示。
  */
-export function pictureGallery(postId, images) {
+export function pictureGallery(entryPath, images) {
   const gallery = el("div", { class: "picture-list" });
   for (const image of images) {
     const frame = el("p", { class: "picture-frame", text: "圖片載入中…" });
     gallery.append(frame);
     api
-      .download(`/posts/${postId}/images/${image.id}`)
+      .download(`${entryPath}/images/${image.id}`)
       .then((blob) => {
-        const picture = el("img", { src: URL.createObjectURL(blob), alt: "文章的附圖" });
+        const picture = el("img", { src: URL.createObjectURL(blob), alt: "附圖" });
         // 圖顯示出來之後，暫時的網址就可以放掉了。
         picture.addEventListener("load", () => URL.revokeObjectURL(picture.src));
         frame.replaceChildren(picture);

@@ -510,6 +510,39 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* 「目前的文檔」這種區塊裡的小標題。 */
+.list-title {
+  margin: 1.3rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.document-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 檔名在左、刪除按鈕在右。檔名很長、畫面又窄的時候，按鈕會自己掉到下一行。 */
+.document-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.document-info {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+/* 一次回報好幾件事的時候（例如哪幾個檔案沒傳上去），一件事一行。 */
+.message-line {
+  display: block;
+}
+
 .member-list {
   display: grid;
   gap: 1rem;
