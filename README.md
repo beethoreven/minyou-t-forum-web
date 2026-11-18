@@ -92,9 +92,9 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 
 ### 字為什麼這麼大
 
-住戶裡長輩多，整個網站的字級設成瀏覽器預設大小的兩倍。設定只有一行：`css/style.css` 裡的 `html { font-size: 200%; }`。其他尺寸都用 rem 寫，改這一行就會一起縮放。
+住戶裡長輩多，整個網站的字級設成瀏覽器預設大小的 1.4 倍。設定只有一行：`css/style.css` 裡的 `html { font-size: 140%; }`。其他尺寸都用 rem 寫，改這一行就會一起縮放。
 
-用百分比而不是固定的像素：使用者自己把瀏覽器的字調大時，這裡會跟著再放大。字變大之後頁籤一排放不下，所以頁籤與後台的欄位都是「一排放得下幾個就放幾個」，手機上會自動折行。Google 的登入按鈕大小是它自己決定的，不會跟著放大，所以另外用 CSS 放大。
+用百分比而不是固定的像素：使用者自己把瀏覽器的字調大時，這裡會跟著再放大。字一大，東西就可能一排放不下，所以排版都會自己調整：頁籤放得下就四個排一排，放不下（很窄的手機，或字級再調大）就變成二乘二；後台的欄位是一排放得下幾個就放幾個。Google 的登入按鈕大小是它自己決定的，不會跟著放大，所以另外用 CSS 放大。
 
 ### 有條件的內容一律用 fill
 
@@ -302,9 +302,9 @@ Viewing a picture requires the session token just like downloading a document, s
 
 ### Why the Text Is So Large
 
-Many residents are elderly, so the whole site's text is set to twice the browser's default size. It is one line: `html { font-size: 200%; }` in `css/style.css`. Every other size is written in rem, so changing that line scales everything together.
+Many residents are elderly, so the whole site's text is set to 1.4 times the browser's default size. It is one line: `html { font-size: 140%; }` in `css/style.css`. Every other size is written in rem, so changing that line scales everything together.
 
-A percentage is used rather than fixed pixels: when a user enlarges text in their own browser, this grows with it. With larger text the tabs no longer fit on one row, so the tabs and the admin page's fields are laid out as "as many per row as fit" and wrap on a phone. Google's sign-in button picks its own size and doesn't grow with the text, so it is enlarged separately with CSS.
+A percentage is used rather than fixed pixels: when a user enlarges text in their own browser, this grows with it. Larger text means things may no longer fit on one row, so the layout adjusts itself: the tabs sit four in a row when they fit and become two by two when they don't (a very narrow phone, or an even larger text size); the admin page's fields are laid out as many per row as fit. Google's sign-in button picks its own size and doesn't grow with the text, so it is enlarged separately with CSS.
 
 ### Always Use `fill` for Conditional Content
 

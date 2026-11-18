@@ -13,16 +13,19 @@
   --danger: #b3261e;
   --ok: #2e6b3f;
   --radius: 10px;
+
+  /* 畫面左右兩邊留的空間。內容不貼著螢幕邊緣，看起來才不擠。 */
+  --side: 1.2rem;
 }
 
 /*
  * 字級：整個網站的文字大小都跟著這一行走。
- * 住戶裡長輩多，所以設成瀏覽器預設大小的兩倍。覺得太大或太小，只改這個百分比
- * （例如 150%、175%），下面所有用 rem 寫的尺寸會一起縮放。
+ * 住戶裡長輩多，所以設成瀏覽器預設大小的 1.4 倍。覺得太大或太小，只改這個百分比
+ * （例如 125%、175%），下面所有用 rem 寫的尺寸（包含留白）會一起縮放。
  * 用百分比不用固定的像素：使用者自己在瀏覽器把字調大時，這裡會跟著再放大。
  */
 html {
-  font-size: 200%;
+  font-size: 140%;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -41,7 +44,7 @@ body {
   color: var(--text);
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* ── 頁首與頁籤 ───────────────────────────── */
@@ -49,7 +52,7 @@ body {
 .site-header {
   background: var(--accent);
   color: #ffffff;
-  padding: 0.4rem 12px;
+  padding: 0.8rem var(--side);
 }
 
 .site-header-inner,
@@ -64,12 +67,12 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0 0.6rem;
+  gap: 0.2rem 1rem;
 }
 
 .site-title {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   letter-spacing: 0.06em;
 }
 
@@ -77,8 +80,8 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0 0.6rem;
-  font-size: 0.75rem;
+  gap: 0.2rem 1rem;
+  font-size: 0.85rem;
 }
 
 .account-name {
@@ -87,7 +90,7 @@ body {
 
 /* 還不能使用論壇的人，名字旁邊標出現在的狀態（審核中、未註冊、已停用）。 */
 .account-state {
-  padding: 0 0.4rem;
+  padding: 0 0.6rem;
   border-radius: 999px;
   background: #ffffff;
   color: var(--accent);
@@ -96,7 +99,7 @@ body {
 }
 
 .account-link {
-  padding: 0.1rem 0;
+  padding: 0.2rem 0;
   border: 0;
   background: none;
   color: #ffffff;
@@ -106,18 +109,31 @@ body {
 }
 
 .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
-/* 頁籤一排放得下就排一排，放不下就自動折成兩排（手機上是二乘二）。 */
+/*
+ * 頁籤：一排放得下四個就排一排，放不下就變成二乘二，不會出現「三個加一個」。
+ *
+ * 做法是讓每個頁籤的基本寬度跟著容器的寬度變：容器比 16rem 寬時，算出來是負的
+ * （等於 0），四個平分一排；比 16rem 窄時，算出來是很大的數字，每個頁籤都想佔滿一排，
+ * 但最多只能到一半（max-width: 50%），於是一排兩個。
+ * 16rem 是四個頁籤的字排一排最少需要的寬度，會跟著上面的字級一起縮放。
+ * 頁籤左右不留白：四個字的頁籤在手機上剛好排得下一排，再扣掉留白就排不下了。
+ */
 .tabs-inner {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr));
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .tab {
-  padding: 0.35rem 2px 0.25rem;
+  flex: 1 1 calc((16rem - 100%) * 999);
+  max-width: 50%;
+  padding: 0.7rem 2px 0.55rem;
   border-bottom: 4px solid transparent;
   color: var(--muted);
   font-size: 0.9rem;
@@ -133,7 +149,7 @@ body {
 }
 
 .view {
-  padding: 0.5rem 12px 2rem;
+  padding: 1.2rem var(--side) 3rem;
 }
 
 /* ── 共用的小零件 ─────────────────────────── */
@@ -143,19 +159,19 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.3rem 0.6rem;
-  margin-bottom: 0.4rem;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .button {
   display: inline-block;
-  min-height: 2.5rem;
-  padding: 0.35rem 0.9rem;
+  min-height: 2.6rem;
+  padding: 0.4rem 1.1rem;
   border: 2px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -183,13 +199,13 @@ body {
 }
 
 .button-small {
-  min-height: 2rem;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.8rem;
+  min-height: 2.1rem;
+  padding: 0.2rem 0.8rem;
+  font-size: 0.85rem;
 }
 
 .status {
-  margin: 0.8rem 0;
+  margin: 2rem 0;
   color: var(--muted);
   text-align: center;
 }
@@ -199,13 +215,13 @@ body {
 }
 
 .status-error p {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.8rem;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 0.3rem;
-  padding: 0.1rem 0;
+  margin-bottom: 0.8rem;
+  padding: 0.2rem 0;
   color: var(--accent);
   text-decoration: none;
 }
@@ -218,21 +234,22 @@ body {
 .form,
 .placeholder,
 .member {
-  padding: 0.6rem;
+  padding: 1.1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 
 .card-center {
-  margin-top: 0.6rem;
-  padding: 1rem 0.6rem;
+  margin-top: 1.2rem;
+  padding: 2rem 1.2rem;
   text-align: center;
 }
 
 .card-text {
-  margin: 0.3rem 0 0.6rem;
+  margin: 0.6rem 0 1.1rem;
   color: var(--muted);
+  overflow-wrap: anywhere; /* 很長的網址或路徑也要折行，不能凸出卡片 */
 }
 
 /*
@@ -243,11 +260,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 4.5rem;
+  min-height: 4rem;
 }
 
 .google-button > div {
-  transform: scale(1.5);
+  transform: scale(1.3);
   transform-origin: center;
 }
 
@@ -274,7 +291,7 @@ body {
 .entry {
   display: block;
   width: 100%;
-  padding: 0.45rem 0.6rem;
+  padding: 0.8rem 1.1rem;
   border: 0;
   background: none;
   color: inherit;
@@ -301,13 +318,13 @@ body {
 
 .entry-meta {
   display: block;
-  margin: 0.1rem 0 0;
+  margin: 0.2rem 0 0;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .list-more {
-  margin-top: 0.4rem;
+  margin-top: 1rem;
   text-align: center;
 }
 
@@ -315,15 +332,15 @@ body {
 
 .detail-title {
   margin: 0;
-  font-size: 1.2rem;
-  line-height: 1.35;
+  font-size: 1.3rem;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
 /* 內文是純文字：保留使用者打的換行，太長的字（例如網址）自動折行。 */
 .body-text {
-  margin: 0.5rem 0 0;
-  line-height: 1.6;
+  margin: 1rem 0 0;
+  line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -335,22 +352,22 @@ body {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.6rem;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
 }
 
 /* ── 附圖 ─────────────────────────────────── */
 
 .picture-list {
   display: grid;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
+  gap: 0.8rem;
+  margin-top: 1.1rem;
 }
 
 .picture-frame {
   margin: 0;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .picture-list img {
@@ -363,16 +380,16 @@ body {
 .picture-input {
   display: block;
   max-width: 100%;
-  margin: 0.2rem 0;
+  margin: 0.4rem 0;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .picture-previews {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
-  gap: 0.4rem;
-  margin: 0.3rem 0 0;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.5rem 0 0;
   padding: 0;
   list-style: none;
 }
@@ -387,18 +404,18 @@ body {
 
 .picture-preview .button {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 0.3rem;
 }
 
 /* ── 回覆 ─────────────────────────────────── */
 
 .replies {
-  margin-top: 0.6rem;
+  margin-top: 1.2rem;
 }
 
 .section-title {
-  margin: 0 0 0.2rem;
-  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
 }
 
 .reply-list {
@@ -408,20 +425,20 @@ body {
 }
 
 .reply {
-  padding: 0.5rem 0;
+  padding: 0.9rem 0;
   border-bottom: 1px solid var(--line);
 }
 
 .reply .body-text {
-  margin-top: 0.15rem;
-}
-
-.reply .actions {
   margin-top: 0.3rem;
 }
 
+.reply .actions {
+  margin-top: 0.6rem;
+}
+
 .replies .form {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   padding: 0;
   border: 0;
 }
@@ -429,20 +446,20 @@ body {
 /* ── 表單 ─────────────────────────────────── */
 
 .field {
-  margin-bottom: 0.6rem;
+  margin-bottom: 1.1rem;
 }
 
 .label {
   display: block;
-  margin-bottom: 0.1rem;
+  margin-bottom: 0.3rem;
   font-weight: 600;
 }
 
 .input {
   display: block;
   width: 100%;
-  min-height: 2.5rem;
-  padding: 0.3rem 0.5rem;
+  min-height: 2.6rem;
+  padding: 0.4rem 0.7rem;
   border: 2px solid var(--line);
   border-radius: var(--radius);
   background: #ffffff;
@@ -461,15 +478,15 @@ body {
 }
 
 .textarea {
-  min-height: 6rem;
+  min-height: 7rem;
   resize: vertical;
 }
 
 .counter {
   display: block;
-  margin-top: 2px;
+  margin-top: 0.2rem;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   text-align: right;
 }
 
@@ -479,7 +496,7 @@ body {
 }
 
 .form-error {
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.7rem;
   color: var(--danger);
 }
 
@@ -490,12 +507,12 @@ body {
 /* ── 後台 ─────────────────────────────────── */
 
 .admin-section {
-  margin-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
 }
 
 .member-list {
   display: grid;
-  gap: 0.5rem;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -506,7 +523,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.1rem 0.5rem;
+  gap: 0.3rem 0.8rem;
 }
 
 .member-email {
@@ -518,20 +535,20 @@ body {
 .member-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.4rem;
-  margin-top: 0.4rem;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
 }
 
 .member-field .label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .badge {
-  padding: 0 0.5rem;
+  padding: 0.05rem 0.7rem;
   border-radius: 999px;
   background: var(--bg);
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 
@@ -547,7 +564,7 @@ body {
 }
 
 .save-message {
-  margin: 0.3rem 0 0;
+  margin: 0.7rem 0 0;
   color: var(--ok);
 }
 
@@ -562,8 +579,8 @@ body {
 /* ── 確認視窗 ─────────────────────────────── */
 
 .dialog {
-  width: min(22rem, calc(100vw - 24px));
-  padding: 0.7rem;
+  width: min(22rem, calc(100vw - 2 * var(--side)));
+  padding: 1.3rem;
   border: 0;
   border-radius: var(--radius);
   color: var(--text);
@@ -581,14 +598,14 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.3rem;
-  margin-top: 0.7rem;
+  gap: 0.6rem;
+  margin-top: 1.3rem;
 }
 
 /* ── 預留的頁籤 ───────────────────────────── */
 
 .placeholder {
-  padding: 1.2rem 0.6rem;
+  padding: 2.5rem 1.2rem;
   color: var(--muted);
   text-align: center;
 }
