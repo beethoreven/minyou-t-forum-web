@@ -3,7 +3,7 @@
 // 登入憑證是 backend 發的（不是 Google 的），存在 localStorage，所以關掉分頁、重新整理、
 // 關掉瀏覽器再開，都還是登入狀態。只有按登出、太久沒用、或帳號被停用才會登出。
 
-const STORAGE_KEY = "minyou_t_forum.session";
+const STORAGE_KEY = "minyou-t-forum.session";
 
 // 存在瀏覽器裡的內容：{ token: 登入憑證, email, name: Google 帳號上的名稱 }
 let stored = readStored();

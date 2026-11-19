@@ -17,14 +17,14 @@
 
 一個給社區住戶用的小論壇的網頁。住戶用 Google 帳號登入，註冊後要經過審核才能使用。
 
-這支 repo 是前端，只有 HTML、CSS、JavaScript，沒有用任何框架，也沒有 build 流程。資料全部來自後端 [`minyou_t_forum-backend`](https://github.com/beethoreven/minyou_t_forum-backend) 的 API。
+這支 repo 是前端，只有 HTML、CSS、JavaScript，沒有用任何框架，也沒有 build 流程。資料全部來自後端 [`minyou-t-forum-backend`](https://github.com/beethoreven/minyou-t-forum-backend) 的 API。
 
 ### 系統架構
 
 ```
-minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起，本身不部署
-├── minyou_t_forum-backend/     後端：Flask API，部署在 Render
-└── minyou_t_forum-web/         ← 這支 repo：靜態網頁，部署在 GitHub Pages
+minyou-t-forum/                 總覽用的 repo，把下面兩支掛在一起，本身不部署
+├── minyou-t-forum-backend/     後端：Flask API，部署在 Render
+└── minyou-t-forum-web/         ← 這支 repo：靜態網頁，部署在 GitHub Pages
 ```
 
 打開網頁時，`js/main.js` 先確認登入狀態，再決定顯示哪個畫面：
@@ -156,7 +156,7 @@ minyou_t_forum/                 總覽用的 repo，把下面兩支掛在一起�
 
 ### 1. 先把後端跑起來
 
-照 [`minyou_t_forum-backend`](https://github.com/beethoreven/minyou_t_forum-backend) 的說明，讓後端在 `http://localhost:5180` 跑起來。
+照 [`minyou-t-forum-backend`](https://github.com/beethoreven/minyou-t-forum-backend) 的說明，讓後端在 `http://localhost:5180` 跑起來。
 
 ### 2. 填設定
 
@@ -237,14 +237,14 @@ The two parts are deliberately separate; don't cross-read them. The report is ba
 
 The web pages of a small forum for the residents of one community. Residents sign in with a Google account and must be reviewed after registering before they can use it.
 
-This repo is the frontend. It is only HTML, CSS and JavaScript, with no framework and no build step. All data comes from the API of the backend, [`minyou_t_forum-backend`](https://github.com/beethoreven/minyou_t_forum-backend).
+This repo is the frontend. It is only HTML, CSS and JavaScript, with no framework and no build step. All data comes from the API of the backend, [`minyou-t-forum-backend`](https://github.com/beethoreven/minyou-t-forum-backend).
 
 ### System Architecture
 
 ```
-minyou_t_forum/                 Overview repo that mounts the two below; never deployed itself
-├── minyou_t_forum-backend/     Backend: Flask API, deployed on Render
-└── minyou_t_forum-web/         ← this repo: static pages, deployed on GitHub Pages
+minyou-t-forum/                 Overview repo that mounts the two below; never deployed itself
+├── minyou-t-forum-backend/     Backend: Flask API, deployed on Render
+└── minyou-t-forum-web/         ← this repo: static pages, deployed on GitHub Pages
 ```
 
 When the page opens, `js/main.js` first establishes the sign-in state and then decides which screen to show:
@@ -376,7 +376,7 @@ This does nothing for "the first visitor after a long quiet period": the backend
 
 ### 1. Get the Backend Running First
 
-Follow [`minyou_t_forum-backend`](https://github.com/beethoreven/minyou_t_forum-backend) to get the backend running at `http://localhost:5180`.
+Follow [`minyou-t-forum-backend`](https://github.com/beethoreven/minyou-t-forum-backend) to get the backend running at `http://localhost:5180`.
 
 ### 2. Fill In the Settings
 
